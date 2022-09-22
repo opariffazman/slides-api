@@ -1,72 +1,81 @@
-const express = require('express')
-const app = express()
-const db = require('cyclic-dynamodb')
+const express = require('express');
+const Joi = require('joi'); //used for validation
+const app = express();
+app.use(express.json());
 
-app.use(express.json())
-app.use(express.urlencoded({ extended: true }))
+const books = [
+{title: 'Harry Potter', id: 1},
+{title: 'Twilight', id: 2},
+{title: 'Lorien Legacies', id: 3}
+]
 
-// #############################################################################
-// This configures static hosting for files in /public that have the extensions
-// listed in the array.
-// var options = {
-//   dotfiles: 'ignore',
-//   etag: false,
-//   extensions: ['htm', 'html','css','js','ico','jpg','jpeg','png','svg'],
-//   index: ['index.html'],
-//   maxAge: '1m',
-//   redirect: false
-// }
-// app.use(express.static('public', options))
-// #############################################################################
+//READ Request Handlers
+app.get('/', (req, res) => {
+res.send('Welcome to Edurekas REST API with Node.js Tutorial!!');
+});
 
-// Create or Update an item
-app.post('/:col/:key', async (req, res) => {
-  console.log(req.body)
+app.get('/api/books', (req,res)=> {
+res.send(books);
+});
 
-  const col = req.params.col
-  const key = req.params.key
-  console.log(`from collection: ${col} delete key: ${key} with params ${JSON.stringify(req.params)}`)
-  const item = await db.collection(col).set(key, req.body)
-  console.log(JSON.stringify(item, null, 2))
-  res.json(item).end()
-})
+app.get('/api/books/:id', (req, res) => {
+const book = books.find(c => c.id === parseInt(req.params.id));
 
-// Delete an item
-app.delete('/:col/:key', async (req, res) => {
-  const col = req.params.col
-  const key = req.params.key
-  console.log(`from collection: ${col} delete key: ${key} with params ${JSON.stringify(req.params)}`)
-  const item = await db.collection(col).delete(key)
-  console.log(JSON.stringify(item, null, 2))
-  res.json(item).end()
-})
+if (!book) res.status(404).send('<h2 style="font-family: Malgun Gothic; color: darkred;">Ooops... Cant find what you are looking for!</h2>');
+res.send(book);
+});
 
-// Get a single item
-app.get('/:col/:key', async (req, res) => {
-  const col = req.params.col
-  const key = req.params.key
-  console.log(`from collection: ${col} get key: ${key} with params ${JSON.stringify(req.params)}`)
-  const item = await db.collection(col).get(key)
-  console.log(JSON.stringify(item, null, 2))
-  res.json(item).end()
-})
+//CREATE Request Handler
+app.post('/api/books', (req, res)=> {
 
-// Get a full listing
-app.get('/:col', async (req, res) => {
-  const col = req.params.col
-  console.log(`list collection: ${col} with params: ${JSON.stringify(req.params)}`)
-  const items = await db.collection(col).list()
-  console.log(JSON.stringify(items, null, 2))
-  res.json(items).end()
-})
+const { error } = validateBook(req.body);
+if (error){
+res.status(400).send(error.details[0].message)
+return;
+}
+const book = {
+id: books.length + 1,
+title: req.body.title
+};
+books.push(book);
+res.send(book);
+});
 
-// Catch all handler for all other request.
-app.use('*', (req, res) => {
-  res.json({ msg: 'no route handler found' }).end()
-})
+//UPDATE Request Handler
+app.put('/api/books/:id', (req, res) => {
+const book = books.find(c=> c.id === parseInt(req.params.id));
+if (!book) res.status(404).send('<h2 style="font-family: Malgun Gothic; color: darkred;">Not Found!! </h2>');
 
-// Start the server
-const port = process.env.PORT || 3000
-app.listen(port, () => {
-  console.log(`index.js listening on ${port}`)
-})
+const { error } = validateBook(req.body);
+if (error){
+res.status(400).send(error.details[0].message);
+return;
+}
+
+book.title = req.body.title;
+res.send(book);
+});
+
+//DELETE Request Handler
+app.delete('/api/books/:id', (req, res) => {
+
+const book = books.find( c=> c.id === parseInt(req.params.id));
+if(!book) res.status(404).send('<h2 style="font-family: Malgun Gothic; color: darkred;"> Not Found!! </h2>');
+
+const index = books.indexOf(book);
+books.splice(index,1);
+
+res.send(book);
+});
+
+function validateBook(book) {
+const schema = {
+title: Joi.string().min(3).required()
+};
+return Joi.validate(book, schema);
+
+}
+
+//PORT ENVIRONMENT VARIABLE
+const port = process.env.PORT || 8080;
+app.listen(port, () => console.log(`Listening on port ${port}..`));
