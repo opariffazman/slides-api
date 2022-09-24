@@ -56,15 +56,15 @@ app.post('*', async (req, res) => {
   }).promise()
 
   current = JSON.parse(s3File.Body.toString())
-  current['slides'].push(JSON.parse(req.body))
+  console.log(current)
 
-  await s3.putObject({
-    Body: JSON.stringify(current),
-    Bucket: process.env.BUCKET,
-    Key: filename,
-  }).promise()
+  // await s3.putObject({
+  //   Body: JSON.stringify(current),
+  //   Bucket: process.env.BUCKET,
+  //   Key: filename,
+  // }).promise()
 
-  res.set('Content-type', 'application/json')
+  // res.set('Content-type', 'application/json')
   res.send('json updated')
   res.send(current);
 })
