@@ -3,8 +3,10 @@ const app = express()
 const AWS = require("aws-sdk");
 const s3 = new AWS.S3()
 const bodyParser = require('body-parser');
+const cors = require('cors');
 
 app.use(bodyParser.json())
+app.use(cors());
 
 // curl -i https://some-app.cyclic.app/myFile.txt
 // app.get('*', async (req, res) => {
@@ -35,9 +37,8 @@ app.get('/api/listJson', async (req, res) => {
   try {
     let s3Objects = await s3.listObjects({
       Bucket: process.env.BUCKET,
-      Key: "*.json",
     }).promise()
-    res.send(s3Objects).end()
+    res.send(s3Objects.Contents).end()
   } catch (error) {
     console.log(error)
     res.sendStatus(500).end()
