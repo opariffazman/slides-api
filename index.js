@@ -50,34 +50,26 @@ app.post('*', async (req, res) => {
   let filename = req.path.slice(1)
   let current = [];
 
-  try {
-    let s3File = await s3.getObject({
-      Bucket: process.env.BUCKET,
-      Key: filename,
-    }).promise()
+  const buffer = Buffer.concat(
+    await (
+      await s3Client
+        .send(new GetObjectCommand({
+          Bucket: process.env.BUCKET,
+          Key: filename,
+        }))
+    ).Body.toArray()
+  )
 
-    current = s3File.Body.toArray()
-    console.log(current['slides'])
-  } catch (error) {
-    if (error.code === 'NoSuchKey') {
-      console.log(`No such key ${filename}`)
-      res.sendStatus(404).end()
-    } else {
-      console.log(error)
-      res.sendStatus(500).end()
-    }
-  }
+  console.log(buffer)
+  // await s3.putObject({
+  //   Body: JSON.stringify(current),
+  //   Bucket: process.env.BUCKET,
+  //   Key: filename,
+  // }).promise()
 
-  current['slides'].push(req.body);
-  await s3.putObject({
-    Body: JSON.stringify(current),
-    Bucket: process.env.BUCKET,
-    Key: filename,
-  }).promise()
-
-  res.set('Content-type', 'application/json')
-  res.send('json updated')
-  res.send(current);
+  // res.set('Content-type', 'application/json')
+  // res.send('json updated')
+  // res.send(current);
 })
 
 // curl -i -XDELETE https://some-app.cyclic.app/myFile.txt
