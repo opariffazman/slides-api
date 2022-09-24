@@ -56,8 +56,10 @@ app.post('*', async (req,res) => {
       Key: filename,
     }).promise()
 
-    console.log(s3File.Body.toString())
-
+    res.set('Content-type', s3File.ContentType)
+    currentSlides = s3File.Body.toString()
+    res.send(s3File.Body.toString()).end()
+    console.log(currentSlides);
   } catch (error) {
     if (error.code === 'NoSuchKey') {
       console.log(`No such key ${filename}`)
