@@ -46,6 +46,21 @@ app.put('*', async (req,res) => {
   res.send('ok').end()
 })
 
+app.post('*', async (req,res) => {
+  let filename = req.path.slice(1)
+
+  console.log(typeof req.body)
+
+  await s3.putObject({
+    Body: JSON.stringify(req.body),
+    Bucket: process.env.BUCKET,
+    Key: filename,
+  }).promise()
+
+  res.set('Content-type', 'text/plain')
+  res.send('ok').end()
+})
+
 // curl -i -XDELETE https://some-app.cyclic.app/myFile.txt
 app.delete('*', async (req,res) => {
   let filename = req.path.slice(1)
