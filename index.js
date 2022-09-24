@@ -33,12 +33,21 @@ app.use(cors());
 
 // list all objects inside s3 bucket
 app.get('/api/listJson', async (req, res) => {
-
+  let jsonArr = [];
   try {
     let s3Objects = await s3.listObjects({
       Bucket: process.env.BUCKET,
     }).promise()
-    res.send(s3Objects.Contents).end()
+
+    let raw = s3Objects.Contents
+
+    for (let index = 0; index < raw.length; index++) {
+      if (raw[index].Key.includes(".json")) {
+        jsonArr.push(raw[index]);
+      }
+    }
+
+    res.send(jsonArr).end()
   } catch (error) {
     console.log(error)
     res.sendStatus(500).end()
