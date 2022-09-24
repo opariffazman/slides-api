@@ -56,7 +56,8 @@ app.post('*', async (req, res) => {
       Key: filename,
     }).promise()
 
-    current = s3File.Body.toString()
+    current = JSON.stringify(s3File.Body.toString())
+    current = JSON.parse(current)
     console.log(current['slides'])
   } catch (error) {
     if (error.code === 'NoSuchKey') {
