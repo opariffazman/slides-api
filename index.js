@@ -29,27 +29,21 @@ app.use(bodyParser.json())
 //   }
 // })
 
-app.get('*', async (req, res) => {
+// list all objects inside s3 bucket
+app.get('/api/listJson', async (req, res) => {
 
   try {
     let s3Objects = await s3.listObjects({
-      Bucket: process.env.BUCKET
+      Bucket: process.env.BUCKET,
+      Key: "*.json"
     }).promise()
-
     res.send(s3Objects).end()
   } catch (error) {
-    if (error.code === 'NoSuchKey') {
-      console.log(`No such key ${filename}`)
-      res.sendStatus(404).end()
-    } else {
-      console.log(error)
-      res.sendStatus(500).end()
-    }
+    console.log(error)
+    res.sendStatus(500).end()
   }
 })
 
-
-// curl -i -XPUT --data '{"k1":"value 1", "k2": "value 2"}' -H 'Content-type: application/json' https://some-app.cyclic.app/myFile.txt
 app.put('*', async (req, res) => {
   let filename = req.path.slice(1)
 
@@ -63,29 +57,6 @@ app.put('*', async (req, res) => {
 
   res.set('Content-type', 'application/json')
   res.send('ok').end()
-})
-
-app.post('*', async (req, res) => {
-  let filename = req.path.slice(1)
-  let current;
-
-  let s3File = await s3.getObject({
-    Bucket: process.env.BUCKET,
-    Key: filename,
-  }).promise()
-
-  current = JSON.parse(s3File.Body.toString())
-  console.log(current)
-
-  // await s3.putObject({
-  //   Body: JSON.stringify(current),
-  //   Bucket: process.env.BUCKET,
-  //   Key: filename,
-  // }).promise()
-
-  // res.set('Content-type', 'application/json')
-  res.send('json updated')
-  res.send(current);
 })
 
 // curl -i -XDELETE https://some-app.cyclic.app/myFile.txt
