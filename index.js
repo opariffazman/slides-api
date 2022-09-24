@@ -35,7 +35,7 @@ app.get('/api/listJson', async (req, res) => {
   try {
     let s3Objects = await s3.listObjects({
       Bucket: process.env.BUCKET,
-      Key: "*.json"
+      Key: "*.json",
     }).promise()
     res.send(s3Objects).end()
   } catch (error) {
