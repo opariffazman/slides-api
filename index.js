@@ -56,7 +56,7 @@ app.post('*', async (req,res) => {
       Key: filename,
     }).promise()
 
-    console.log(s3File.Body)
+    console.log(s3File.Body.toJSON)
 
   } catch (error) {
     if (error.code === 'NoSuchKey') {
