@@ -7,29 +7,29 @@ const bodyParser = require('body-parser');
 app.use(bodyParser.json())
 
 // curl -i https://some-app.cyclic.app/myFile.txt
+// app.get('*', async (req, res) => {
+//   let filename = req.path.slice(1)
+
+//   try {
+//     let s3File = await s3.getObject({
+//       Bucket: process.env.BUCKET,
+//       Key: filename,
+//     }).promise()
+
+//     res.set('Content-type', s3File.ContentType)
+//     res.send(s3File.Body.toString()).end()
+//   } catch (error) {
+//     if (error.code === 'NoSuchKey') {
+//       console.log(`No such key ${filename}`)
+//       res.sendStatus(404).end()
+//     } else {
+//       console.log(error)
+//       res.sendStatus(500).end()
+//     }
+//   }
+// })
+
 app.get('*', async (req, res) => {
-  let filename = req.path.slice(1)
-
-  try {
-    let s3File = await s3.getObject({
-      Bucket: process.env.BUCKET,
-      Key: filename,
-    }).promise()
-
-    res.set('Content-type', s3File.ContentType)
-    res.send(s3File.Body.toString()).end()
-  } catch (error) {
-    if (error.code === 'NoSuchKey') {
-      console.log(`No such key ${filename}`)
-      res.sendStatus(404).end()
-    } else {
-      console.log(error)
-      res.sendStatus(500).end()
-    }
-  }
-})
-
-app.get('/api/bucketlist', async (req, res) => {
 
   try {
     let s3Objects = await s3.listObjects({
