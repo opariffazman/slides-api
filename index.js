@@ -56,7 +56,7 @@ app.post('*', async (req,res) => {
       Key: filename,
     }).promise()
 
-    currentSlides = s3File.ContentType
+    console.log(s3File.ContentType)
 
   } catch (error) {
     if (error.code === 'NoSuchKey') {
@@ -68,8 +68,6 @@ app.post('*', async (req,res) => {
     }
   }
 
-  console.log(typeof req.body)
-  currentSlides.slides.push(req.body)
   await s3.putObject({
     Body: JSON.stringify(currentSlides),
     Bucket: process.env.BUCKET,
