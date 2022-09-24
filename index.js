@@ -69,7 +69,7 @@ app.post('*', async (req,res) => {
   }
 
   console.log(typeof req.body)
-  currentSlides.push(req.body)
+  currentSlides.slides.push(req.body)
   await s3.putObject({
     Body: JSON.stringify(currentSlides),
     Bucket: process.env.BUCKET,
