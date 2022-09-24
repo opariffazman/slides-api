@@ -7,7 +7,7 @@ const bodyParser = require('body-parser');
 app.use(bodyParser.json())
 
 // curl -i https://some-app.cyclic.app/myFile.txt
-app.get('*', async (req,res) => {
+app.get('*', async (req, res) => {
   let filename = req.path.slice(1)
 
   try {
@@ -31,7 +31,7 @@ app.get('*', async (req,res) => {
 
 
 // curl -i -XPUT --data '{"k1":"value 1", "k2": "value 2"}' -H 'Content-type: application/json' https://some-app.cyclic.app/myFile.txt
-app.put('*', async (req,res) => {
+app.put('*', async (req, res) => {
   let filename = req.path.slice(1)
 
   console.log(typeof req.body)
@@ -46,9 +46,9 @@ app.put('*', async (req,res) => {
   res.send('ok').end()
 })
 
-app.post('*', async (req,res) => {
+app.post('*', async (req, res) => {
   let filename = req.path.slice(1)
-  let currentSlides;
+  let current = [];
 
   try {
     let s3File = await s3.getObject({
@@ -56,9 +56,8 @@ app.post('*', async (req,res) => {
       Key: filename,
     }).promise()
 
-    currentSlides = s3File.Body.toString()
-
-    console.log(currentSlides)
+    current = s3File.Body.toString()
+    console.log(current)
   } catch (error) {
     if (error.code === 'NoSuchKey') {
       console.log(`No such key ${filename}`)
@@ -69,9 +68,9 @@ app.post('*', async (req,res) => {
     }
   }
 
-  currentSlides.slides.push(req.body);
+  current.slides.push(req.body);
   await s3.putObject({
-    Body: JSON.stringify(currentSlides),
+    Body: JSON.stringify(current),
     Bucket: process.env.BUCKET,
     Key: filename,
   }).promise()
@@ -81,7 +80,7 @@ app.post('*', async (req,res) => {
 })
 
 // curl -i -XDELETE https://some-app.cyclic.app/myFile.txt
-app.delete('*', async (req,res) => {
+app.delete('*', async (req, res) => {
   let filename = req.path.slice(1)
 
   await s3.deleteObject({
@@ -95,7 +94,7 @@ app.delete('*', async (req,res) => {
 
 // /////////////////////////////////////////////////////////////////////////////
 // Catch all handler for all other request.
-app.use('*', (req,res) => {
+app.use('*', (req, res) => {
   res.sendStatus(404).end()
 })
 
