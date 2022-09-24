@@ -42,22 +42,41 @@ app.put('*', async (req,res) => {
     Key: filename,
   }).promise()
 
-  res.set('Content-type', 'text/plain')
+  res.set('Content-type', 'application/json')
   res.send('ok').end()
 })
 
 app.post('*', async (req,res) => {
   let filename = req.path.slice(1)
+  let currentSlides;
+
+  try {
+    let s3File = await s3.getObject({
+      Bucket: process.env.BUCKET,
+      Key: filename,
+    }).promise()
+
+    currentSlides = s3File.ContentType
+
+  } catch (error) {
+    if (error.code === 'NoSuchKey') {
+      console.log(`No such key ${filename}`)
+      res.sendStatus(404).end()
+    } else {
+      console.log(error)
+      res.sendStatus(500).end()
+    }
+  }
 
   console.log(typeof req.body)
-
+  let newSlides = currentSlides + req.body
   await s3.putObject({
-    Body: JSON.stringify(req.body),
+    Body: JSON.stringify(newSlides),
     Bucket: process.env.BUCKET,
     Key: filename,
   }).promise()
 
-  res.set('Content-type', 'text/plain')
+  res.set('Content-type', 'application/json')
   res.send('ok').end()
 })
 
@@ -70,7 +89,7 @@ app.delete('*', async (req,res) => {
     Key: filename,
   }).promise()
 
-  res.set('Content-type', 'text/plain')
+  res.set('Content-type', 'application/json')
   res.send('ok').end()
 })
 
