@@ -8,56 +8,43 @@ const cors = require('cors');
 app.use(bodyParser.json())
 app.use(cors());
 
-// curl -i https://some-app.cyclic.app/files?name=
+// GET https://some-app.cyclic.app/files?name=
 app.get('/api/files', async (req, res) => {
-  const filename = req.query.name;
+  const filename = req.query.name + '.json';
 
-  try {
-    let s3File = await s3.getObject({
-      Bucket: process.env.BUCKET,
-      Key: filename,
-    }).promise()
+  let s3File = await s3.getObject({
+    Bucket: process.env.BUCKET,
+    Key: filename,
+  }).promise()
 
-    res.set('Content-type', s3File.ContentType)
-    res.send(s3File.Body.toString()).end()
-  } catch (error) {
-    if (error.code === 'NoSuchKey') {
-      console.log(`No such key ${filename}`)
-      res.sendStatus(404).end()
-    } else {
-      console.log(error)
-      res.sendStatus(500).end()
-    }
-  }
+  res.set('Content-type', s3File.ContentType)
+  res.send(s3File.Body.toString()).end()
 })
 
-// list all json objects  inside s3 bucket
+// GET https://some-app.cyclic.app/api/listJson
+// list all objects with .json key inside s3 bucket
 app.get('/api/listJson', async (req, res) => {
   let jsonArr = [];
-  try {
-    let s3Objects = await s3.listObjects({
-      Bucket: process.env.BUCKET,
-    }).promise()
 
-    let raw = s3Objects.Contents
+  let s3Objects = await s3.listObjects({
+    Bucket: process.env.BUCKET,
+  }).promise()
 
-    for (let index = 0; index < raw.length; index++) {
-      if (raw[index].Key.includes(".json")) {
-        jsonArr.push(raw[index]);
-      }
+  let raw = s3Objects.Contents
+
+  for (let index = 0; index < raw.length; index++) {
+    if (raw[index].Key.includes(".json")) {
+      jsonArr.push(raw[index]);
     }
-
-    res.send(jsonArr).end()
-  } catch (error) {
-    console.log(error)
-    res.sendStatus(500).end()
   }
+
+  res.send(jsonArr).end()
+
 })
 
-app.put('*', async (req, res) => {
-  let filename = req.path.slice(1)
-
-  console.log(typeof req.body)
+// PUT https://some-app.cyclic.app/files?name=
+app.put('/api/files', async (req, res) => {
+  const filename = req.query.name + '.json';
 
   await s3.putObject({
     Body: JSON.stringify(req.body),
@@ -66,12 +53,12 @@ app.put('*', async (req, res) => {
   }).promise()
 
   res.set('Content-type', 'application/json')
-  res.send('ok').end()
+  res.send(`${filename} updated`).end()
 })
 
-// curl -i -XDELETE https://some-app.cyclic.app/myFile.txt
-app.delete('*', async (req, res) => {
-  let filename = req.path.slice(1)
+// DELETE https://some-app.cyclic.app/files?name=
+app.delete('/api/files', async (req, res) => {
+  const filename = req.query.name + '.json';
 
   await s3.deleteObject({
     Bucket: process.env.BUCKET,
@@ -79,7 +66,7 @@ app.delete('*', async (req, res) => {
   }).promise()
 
   res.set('Content-type', 'application/json')
-  res.send('ok').end()
+  res.send('`${filename} deleted`').end()
 })
 
 // /////////////////////////////////////////////////////////////////////////////
