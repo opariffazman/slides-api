@@ -8,30 +8,30 @@ const cors = require('cors');
 app.use(bodyParser.json())
 app.use(cors());
 
-// curl -i https://some-app.cyclic.app/myFile.txt
-// app.get('*', async (req, res) => {
-//   let filename = req.path.slice(1)
+// curl -i https://some-app.cyclic.app/files?name=
+app.get('/api/files', async (req, res) => {
+  const filename = req.query.name;
 
-//   try {
-//     let s3File = await s3.getObject({
-//       Bucket: process.env.BUCKET,
-//       Key: filename,
-//     }).promise()
+  try {
+    let s3File = await s3.getObject({
+      Bucket: process.env.BUCKET,
+      Key: filename,
+    }).promise()
 
-//     res.set('Content-type', s3File.ContentType)
-//     res.send(s3File.Body.toString()).end()
-//   } catch (error) {
-//     if (error.code === 'NoSuchKey') {
-//       console.log(`No such key ${filename}`)
-//       res.sendStatus(404).end()
-//     } else {
-//       console.log(error)
-//       res.sendStatus(500).end()
-//     }
-//   }
-// })
+    res.set('Content-type', s3File.ContentType)
+    res.send(s3File.Body.toString()).end()
+  } catch (error) {
+    if (error.code === 'NoSuchKey') {
+      console.log(`No such key ${filename}`)
+      res.sendStatus(404).end()
+    } else {
+      console.log(error)
+      res.sendStatus(500).end()
+    }
+  }
+})
 
-// list all objects inside s3 bucket
+// list all json objects  inside s3 bucket
 app.get('/api/listJson', async (req, res) => {
   let jsonArr = [];
   try {
