@@ -76,7 +76,7 @@ app.post('*', async (req,res) => {
 
 //   res.set('Content-type', 'application/json')
 //   res.send('ok').end()
-// })
+})
 
 // curl -i -XDELETE https://some-app.cyclic.app/myFile.txt
 app.delete('*', async (req,res) => {
