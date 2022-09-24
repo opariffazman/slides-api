@@ -29,6 +29,25 @@ app.get('*', async (req, res) => {
   }
 })
 
+app.get('/api/bucketlist', async (req, res) => {
+
+  try {
+    let s3Objects = await s3.listObjects({
+      Bucket: process.env.BUCKET
+    }).promise()
+
+    res.send(s3Objects).end()
+  } catch (error) {
+    if (error.code === 'NoSuchKey') {
+      console.log(`No such key ${filename}`)
+      res.sendStatus(404).end()
+    } else {
+      console.log(error)
+      res.sendStatus(500).end()
+    }
+  }
+})
+
 
 // curl -i -XPUT --data '{"k1":"value 1", "k2": "value 2"}' -H 'Content-type: application/json' https://some-app.cyclic.app/myFile.txt
 app.put('*', async (req, res) => {
