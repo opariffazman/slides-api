@@ -36,7 +36,7 @@ app.get('/api/listJson', async (req, res) => {
 
   const rawObj = s3Objects.Contents
 
-  for (const index = 0; index < rawObj.length; index++) {
+  for (let index = 0; index < rawObj.length; index++) {
     if (rawObj[index].Key.includes(".json")) {
       jsonArr.push(rawObj[index]);
     }
