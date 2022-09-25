@@ -7,11 +7,7 @@ const AWS = require("aws-sdk")
 const s3 = new AWS.S3()
 
 // misc
-// const bodyParser = require('body-parser');
 const cors = require('cors');
-const basicAuth = require('express-basic-auth')
-
-app.use(basicAuth())
 
 app.use(express.json())
 app.use(cors())
