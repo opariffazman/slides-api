@@ -77,7 +77,7 @@ app.delete('/api/admin/files', async (req, res) => {
 })
 
 app.use(basicAuth({
-  users: { 'admin': 'supersecret' }
+  users: { 'admin': process.env.PASS }
 }))
 
 app.get('/login', async (req, res) => {
