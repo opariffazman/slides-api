@@ -61,7 +61,7 @@ app.get('/', function(req, res) {
 
 const httpServer = http.Server(app);
 const portFront = process.env.PORT_FRONT || 8888
-httpServer.listen(por, function () {
+httpServer.listen(portFront, function () {
   console.log('Express server listening to port ' + httpServer.address().port);
 })
 
@@ -120,6 +120,6 @@ app.get('/auth', async (req, res) => {
 // /////////////////////////////////////////////////////////////////////////////
 // Start the server
 const portBack = process.env.PORT_BACK || 3000
-app.listen(port, () => {
+app.listen(portBack, () => {
   console.log(`index.js listening at http://localhost:${port}`)
 })
