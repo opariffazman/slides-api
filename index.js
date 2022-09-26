@@ -52,14 +52,16 @@ app.get('/api/listJson', async (req, res) => {
 
 })
 
-app.get('/signin', (req, res) => {
-  res.sendFile('index.html', {root: path.join(__dirname, "/signin/")})
-})
+// Express Middleware for serving static files
+app.use(express.static(path.join(__dirname, 'public')));
 
-// /////////////////////////////////////////////////////////////////////////////
-// Catch all handler for all other request.
-app.get('*', (req, res) => {
-  res.sendFile('index.html', {root: path.join(__dirname)})
+app.get('/', function(req, res) {
+  res.redirect('index.html')
+})
+const port = process.env.PORT || 3000
+const httpServer = http.Server(app);
+httpServer.listen(port, function () {
+  console.log('Express server listening to port ' + httpServer.address().port)
 })
 
 // PROTECTED
@@ -116,7 +118,7 @@ app.get('/auth', async (req, res) => {
 
 // /////////////////////////////////////////////////////////////////////////////
 // Start the server
-const port = process.env.PORT || 3000
+
 app.listen(port, () => {
   console.log(`index.js listening at http://localhost:${port}`)
 })
