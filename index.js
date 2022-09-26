@@ -58,10 +58,11 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.get('/', function(req, res) {
   res.redirect('index.html')
 })
-const port = process.env.PORT || 3000
+
 const httpServer = http.Server(app);
-httpServer.listen(port, function () {
-  console.log('Express server listening to port ' + httpServer.address().port)
+const portFront = process.env.PORT_FRONT || 8888
+httpServer.listen(por, function () {
+  console.log('Express server listening to port ' + httpServer.address().port);
 })
 
 // PROTECTED
@@ -118,7 +119,7 @@ app.get('/auth', async (req, res) => {
 
 // /////////////////////////////////////////////////////////////////////////////
 // Start the server
-
+const portBack = process.env.PORT_BACK || 3000
 app.listen(port, () => {
   console.log(`index.js listening at http://localhost:${port}`)
 })
