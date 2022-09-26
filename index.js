@@ -8,6 +8,7 @@ const s3 = new AWS.S3()
 
 // misc
 const cors = require('cors');
+const path = require('path');
 
 //auth
 const basicAuth = require('express-basic-auth')
@@ -102,11 +103,14 @@ app.get('/auth', async (req, res) => {
   res.send("Authenticated").end()
 })
 
+app.use('/signin', (req, res) => {
+  res.sendFile(path.join(__dirname, '/signin/index.html'));
+})
+
 // /////////////////////////////////////////////////////////////////////////////
 // Catch all handler for all other request.
 app.use('*', (req, res) => {
-  res.send('No endpoint listening here')
-  res.sendStatus(404).end()
+  res.sendFile(path.join(__dirname, '/index.html'));
 })
 
 // /////////////////////////////////////////////////////////////////////////////
