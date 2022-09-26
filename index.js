@@ -9,6 +9,7 @@ const s3 = new AWS.S3()
 // misc
 const cors = require('cors');
 const path = require('path');
+const http = require('http');
 
 //auth
 const basicAuth = require('express-basic-auth')
@@ -104,13 +105,13 @@ app.get('/auth', async (req, res) => {
 })
 
 app.get('/signin', (req, res) => {
-  res.sendFile('signin/index.html' , { root : __dirname});
+  res.sendFile('index.html', {root: path.join(__dirname, "/signin/")})
 })
 
 // /////////////////////////////////////////////////////////////////////////////
 // Catch all handler for all other request.
 app.get('*', (req, res) => {
-  res.sendFile('index.html' , { root : __dirname});
+  res.sendFile('index.html', {root: path.join(__dirname)})
 })
 
 // /////////////////////////////////////////////////////////////////////////////
