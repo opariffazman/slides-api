@@ -52,7 +52,7 @@ app.get('/api/listJson', async (req, res) => {
 // PROTECTED
 const accessTokenSecret = process.env.SECRET_TOKEN
 app.post('/signin', async (req, res) => {
-  const password = req.body;
+  const { password } = req.body;
   if (password === process.env.PASSWORD) {
     // Generate an access token
     const accessToken = jwt.sign({ password }, accessTokenSecret, { expiresIn: '20m' })
@@ -75,11 +75,11 @@ const authenticateJWT = (req, res, next) => {
   if (authHeader) {
     const token = authHeader.split(' ')[1]
 
-    jwt.verify(token, accessTokenSecret, (err, user) => {
+    jwt.verify(token, accessTokenSecret, (err, password) => {
       if (err)
         return res.sendStatus(403)
 
-      req.user = user
+      req.password = password
       next()
     });
   }
