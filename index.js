@@ -103,14 +103,14 @@ app.get('/auth', async (req, res) => {
   res.send("Authenticated").end()
 })
 
-app.use('/signin', (req, res) => {
-  res.sendFile(path.join(__dirname, '/signin/index.html'));
+app.get('/signin', (req, res) => {
+  res.sendFile('signin/index.html' , { root : __dirname});
 })
 
 // /////////////////////////////////////////////////////////////////////////////
 // Catch all handler for all other request.
-app.use('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '/index.html'));
+app.get('*', (req, res) => {
+  res.sendFile('index.html' , { root : __dirname});
 })
 
 // /////////////////////////////////////////////////////////////////////////////
