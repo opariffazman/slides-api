@@ -8,8 +8,6 @@ const s3 = new AWS.S3()
 
 // misc
 const cors = require('cors');
-const path = require('path');
-const http = require('http');
 
 //auth
 const basicAuth = require('express-basic-auth')
@@ -52,20 +50,15 @@ app.get('/api/listJson', async (req, res) => {
 
 })
 
-// Express Middleware for serving static files
-app.use(express.static(path.join(__dirname, 'public')));
-
-app.get('/', function(req, res) {
-  res.redirect('index.html')
-})
-
-const httpServer = http.Server(app);
-const portFront = process.env.PORT_FRONT || 8888
-httpServer.listen(portFront, function () {
-  console.log('Express server listening to port ' + httpServer.address().portFront);
+// /////////////////////////////////////////////////////////////////////////////
+// Catch all handler for all other request.
+app.use('*', (req, res) => {
+  res.send('No endpoint listening here')
+  res.sendStatus(404).end()
 })
 
 // PROTECTED
+app.use(express.urlencoded({ extended: false }))
 app.use(cookieParser())
 
 app.use(basicAuth({
@@ -79,39 +72,6 @@ const sendUserCookie = (res) => {
   res.cookie('user', 'admin', { maxAge: oneDayToSeconds})
 }
 
-// PUT https://some-app.cyclic.app/api/admin/files?name=
-app.put('/api/admin/files', async (req, res) => {
-  if (!req.cookie.user === 'admin')
-    return
-
-  const filename = req.query.name + '.json'
-
-  await s3.putObject({
-    Body: JSON.stringify(req.body),
-    Bucket: process.env.BUCKET,
-    Key: filename,
-  }).promise()
-
-  res.set('Content-type', 'application/json')
-  res.send(`${filename} updated`).end()
-})
-
-// DELETE https://some-app.cyclic.app/api/admin/files?name=
-app.delete('/api/admin/files', async (req, res) => {
-  if (!req.cookie.user === 'admin')
-    return
-
-  const filename = req.query.name + '.json'
-
-  await s3.deleteObject({
-    Bucket: process.env.BUCKET,
-    Key: filename,
-  }).promise()
-
-  res.set('Content-type', 'application/json')
-  res.send(`${filename} deleted`).end()
-})
-
 app.get('/auth', async (req, res) => {
   sendUserCookie(res)
   res.send("Authenticated").end()
@@ -119,7 +79,7 @@ app.get('/auth', async (req, res) => {
 
 // /////////////////////////////////////////////////////////////////////////////
 // Start the server
-const portBack = process.env.PORT_BACK || 3000
-app.listen(portBack, () => {
-  console.log(`index.js listening at http://localhost:${portBack}`)
+const port = process.env.PORT || 3000
+app.listen(port, () => {
+  console.log(`index.js listening at http://localhost:${port}`)
 })
