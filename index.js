@@ -51,7 +51,7 @@ app.get('/api/listJson', async (req, res) => {
 
 // PROTECTED
 const accessTokenSecret = process.env.SECRET_TOKEN
-app.post('/signin', async (req, res) => {
+app.post('/api/signin', async (req, res) => {
   const { password } = req.body;
   if (password === process.env.PASSWORD) {
     // Generate an access token
@@ -70,18 +70,16 @@ app.post('/signin', async (req, res) => {
 
 // AUTH
 const authenticateJWT = (req, res, next) => {
-  const authHeader = req.headers.authorization;
+  const authHeader = req.headers.authorization
 
   if (authHeader) {
-    const token = authHeader.split(' ')[1]
-
-    jwt.verify(token, accessTokenSecret, (err, password) => {
+    jwt.verify(authHeader, accessTokenSecret, (err, password) => {
       if (err)
         return res.sendStatus(403)
 
       req.password = password
       next()
-    });
+    })
   }
   else
     res.sendStatus(401).end()
