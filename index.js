@@ -70,16 +70,18 @@ app.post('/api/signin', async (req, res) => {
 
 // AUTH
 const authenticateJWT = (req, res, next) => {
-  const authHeader = req.header('x-auth-token')
+  const authHeader = req.headers.authorization;
 
   if (authHeader) {
-    jwt.verify(authHeader, accessTokenSecret, (err, password) => {
+    const token = authHeader.split(' ')[1]
+
+    jwt.verify(token, accessTokenSecret, (err, password) => {
       if (err)
         return res.sendStatus(403)
 
       req.password = password
       next()
-    })
+    });
   }
   else
     res.sendStatus(401).end()
