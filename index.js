@@ -76,19 +76,19 @@ app.delete('/api/admin/files', async (req, res) => {
   res.send(`${filename} deleted`).end()
 })
 
-// /////////////////////////////////////////////////////////////////////////////
-// Catch all handler for all other request.
-app.use('*', (req, res) => {
-  res.send('No endpoint listening here')
-  res.sendStatus(404).end()
-})
-
 app.use(basicAuth({
   users: { 'admin': 'supersecret' }
 }))
 
 app.get('/login', async (req, res) => {
   res.send("Welcome!");
+})
+
+// /////////////////////////////////////////////////////////////////////////////
+// Catch all handler for all other request.
+app.use('*', (req, res) => {
+  res.send('No endpoint listening here')
+  res.sendStatus(404).end()
 })
 
 // /////////////////////////////////////////////////////////////////////////////
