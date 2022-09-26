@@ -9,6 +9,9 @@ const s3 = new AWS.S3()
 // misc
 const cors = require('cors');
 
+//auth
+const basicAuth = require('express-basic-auth')
+
 app.use(express.json())
 app.use(cors())
 
@@ -78,6 +81,14 @@ app.delete('/api/admin/files', async (req, res) => {
 app.use('*', (req, res) => {
   res.send('No endpoint listening here')
   res.sendStatus(404).end()
+})
+
+app.use(basicAuth({
+  users: { 'admin': 'supersecret' }
+}))
+
+app.get('/login', async (req, res) => {
+  res.send("Welcome!");
 })
 
 // /////////////////////////////////////////////////////////////////////////////
