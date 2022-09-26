@@ -52,6 +52,16 @@ app.get('/api/listJson', async (req, res) => {
 
 })
 
+app.get('/signin', (req, res) => {
+  res.sendFile('index.html', {root: path.join(__dirname, "/signin/")})
+})
+
+// /////////////////////////////////////////////////////////////////////////////
+// Catch all handler for all other request.
+app.get('*', (req, res) => {
+  res.sendFile('index.html', {root: path.join(__dirname)})
+})
+
 // PROTECTED
 app.use(cookieParser())
 
@@ -102,16 +112,6 @@ app.delete('/api/admin/files', async (req, res) => {
 app.get('/auth', async (req, res) => {
   sendUserCookie(res)
   res.send("Authenticated").end()
-})
-
-app.get('/signin', (req, res) => {
-  res.sendFile('index.html', {root: path.join(__dirname, "/signin/")})
-})
-
-// /////////////////////////////////////////////////////////////////////////////
-// Catch all handler for all other request.
-app.get('*', (req, res) => {
-  res.sendFile('index.html', {root: path.join(__dirname)})
 })
 
 // /////////////////////////////////////////////////////////////////////////////
