@@ -70,7 +70,7 @@ app.post('/api/signin', async (req, res) => {
 
 // AUTH
 const authenticateJWT = (req, res, next) => {
-  const authHeader = req.headers.authorization
+  const authHeader = req.headers('x-auth-token')
 
   if (authHeader) {
     jwt.verify(authHeader, accessTokenSecret, (err, password) => {
