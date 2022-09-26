@@ -57,10 +57,7 @@ app.post('/api/signin', (req, res) => {
     // Generate an access token
     const accessToken = jwt.sign({ password }, accessTokenSecret, { expiresIn: '20m' })
 
-    return res
-      .send("Authenticated")
-      .json({ accessToken })
-
+    res.json({ accessToken })
   }
   else
     res.sendStatus(401).end()
