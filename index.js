@@ -51,7 +51,6 @@ app.get('/api/listJson', async (req, res) => {
 })
 
 // PROTECTED
-app.use(bodyParser.urlencoded({ extended: false }))
 app.use(cookieParser())
 
 app.use(basicAuth({
