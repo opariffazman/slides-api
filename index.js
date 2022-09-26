@@ -51,7 +51,7 @@ app.get('/api/listJson', async (req, res) => {
 
 // PROTECTED
 const accessTokenSecret = process.env.SECRET_TOKEN
-app.post('/api/signin', async (req, res) => {
+app.post('/api/signin', (req, res) => {
   const { password } = req.body;
   if (password === process.env.PASSWORD) {
     // Generate an access token
