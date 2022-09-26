@@ -55,7 +55,7 @@ app.post('/signin', async (req, res) => {
   const password = req.body;
   if (password === process.env.PASSWORD) {
     // Generate an access token
-    const accessToken = jwt.sign({ username: user.username, role: user.role }, accessTokenSecret, { expiresIn: '20m' })
+    const accessToken = jwt.sign({ password }, accessTokenSecret, { expiresIn: '20m' })
 
     res.json({
       accessToken
