@@ -11,6 +11,7 @@ const cors = require('cors');
 
 //auth
 const basicAuth = require('express-basic-auth')
+const cookieParser = require('cookie-parser')
 
 app.use(express.json())
 app.use(cors())
@@ -49,8 +50,26 @@ app.get('/api/listJson', async (req, res) => {
 
 })
 
+// PROTECTED
+app.use(bodyParser.urlencoded({ extended: false }))
+app.use(cookieParser())
+
+app.use(basicAuth({
+  users: { 'admin': process.env.PASS }
+}))
+
+// sentUserCookie creates a cookie which expires after one day
+const sendUserCookie = (res) => {
+  // Our token expires after one day
+  const oneDayToSeconds = 24 * 60 * 60
+  res.cookie('user', 'admin', { maxAge: oneDayToSeconds})
+}
+
 // PUT https://some-app.cyclic.app/api/admin/files?name=
 app.put('/api/admin/files', async (req, res) => {
+  if (!req.cookie.user === 'admin')
+    return
+
   const filename = req.query.name + '.json'
 
   await s3.putObject({
@@ -65,6 +84,9 @@ app.put('/api/admin/files', async (req, res) => {
 
 // DELETE https://some-app.cyclic.app/api/admin/files?name=
 app.delete('/api/admin/files', async (req, res) => {
+  if (!req.cookie.user === 'admin')
+    return
+
   const filename = req.query.name + '.json'
 
   await s3.deleteObject({
@@ -76,12 +98,9 @@ app.delete('/api/admin/files', async (req, res) => {
   res.send(`${filename} deleted`).end()
 })
 
-app.use(basicAuth({
-  users: { 'admin': process.env.PASS }
-}))
-
-app.get('/login', async (req, res) => {
-  res.send("Welcome!");
+app.get('/auth', async (req, res) => {
+  sendUserCookie(res)
+  res.send("Authenticated").end()
 })
 
 // /////////////////////////////////////////////////////////////////////////////
