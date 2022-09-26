@@ -7,11 +7,10 @@ const AWS = require("aws-sdk")
 const s3 = new AWS.S3()
 
 // misc
-const cors = require('cors');
+const cors = require('cors')
 
 //auth
-const basicAuth = require('express-basic-auth')
-const cookieParser = require('cookie-parser')
+const jwt = require('jsonwebtoken')
 
 app.use(express.json())
 app.use(cors())
@@ -50,31 +49,76 @@ app.get('/api/listJson', async (req, res) => {
 
 })
 
+// PROTECTED
+const accessTokenSecret = process.env.SECRET_TOKEN
+app.post('/signin', async (req, res) => {
+  const password = req.body;
+  if (password === process.env.PASSWORD) {
+    // Generate an access token
+    const accessToken = jwt.sign({ username: user.username, role: user.role }, accessTokenSecret, { expiresIn: '20m' })
+
+    res.json({
+      accessToken
+    })
+
+    res.send("Authenticated").end()
+  }
+  else
+    res.sendStatus(401).end()
+
+})
+
+// AUTH
+const authenticateJWT = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+
+  if (authHeader) {
+    const token = authHeader.split(' ')[1]
+
+    jwt.verify(token, accessTokenSecret, (err, user) => {
+      if (err)
+        return res.sendStatus(403)
+
+      req.user = user
+      next()
+    });
+  }
+  else
+    res.sendStatus(401).end()
+}
+
+// PUT https://some-app.cyclic.app/api/files?name=
+app.put('/api/files', authenticateJWT, async (req, res) => {
+  const filename = req.query.name + '.json'
+
+  await s3.putObject({
+    Body: JSON.stringify(req.body),
+    Bucket: process.env.BUCKET,
+    Key: filename,
+  }).promise()
+
+  res.set('Content-type', 'application/json')
+  res.send(`${filename} updated`).end()
+})
+
+// DELETE https://some-app.cyclic.app/api/files?name=
+app.delete('/api/files', authenticateJWT, async (req, res) => {
+  const filename = req.query.name + '.json'
+
+  await s3.deleteObject({
+    Bucket: process.env.BUCKET,
+    Key: filename,
+  }).promise()
+
+  res.set('Content-type', 'application/json')
+  res.send(`${filename} deleted`).end()
+})
+
 // /////////////////////////////////////////////////////////////////////////////
 // Catch all handler for all other request.
 app.use('*', (req, res) => {
   res.send('No endpoint listening here')
   res.sendStatus(404).end()
-})
-
-// PROTECTED
-app.use(express.urlencoded({ extended: false }))
-app.use(cookieParser())
-
-app.use(basicAuth({
-  users: { 'admin': process.env.PASS }
-}))
-
-// sentUserCookie creates a cookie which expires after one day
-const sendUserCookie = (res) => {
-  // Our token expires after one day
-  const oneDayToSeconds = 24 * 60 * 60
-  res.cookie('user', 'admin', { maxAge: oneDayToSeconds})
-}
-
-app.get('/auth', async (req, res) => {
-  sendUserCookie(res)
-  res.send("Authenticated").end()
 })
 
 // /////////////////////////////////////////////////////////////////////////////
