@@ -58,7 +58,7 @@ app.get('/api/listJson', async (req, res) => {
 })
 
 app.get('/api/listUser', async (req, res) => {
-  const userObjects = await users.list().promise()
+  const userObjects = await users.list()
 
   res.json(userObjects).end()
 })
