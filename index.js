@@ -132,7 +132,7 @@ const authenticateJWT = (req, res, next) => {
 app.put('/api/files', authenticateJWT, async (req, res) => {
   const { role } = req.user
 
-  if (role !== admin)
+  if (role !== 'admin')
     return res.sendStatus(403)
 
   const filename = req.query.name + '.json'
