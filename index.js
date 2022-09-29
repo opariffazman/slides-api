@@ -7,7 +7,8 @@ const AWS = require("aws-sdk")
 const s3 = new AWS.S3()
 
 // cyclic db
-const db = require('cyclic-dynamodb')
+const CyclicDB = require('cyclic-dynamodb')
+const db = CyclicDB(process.env.CyclicDB) // find it on the Database/Storage tab
 const users = db.collection('users')
 
 // misc
@@ -21,31 +22,6 @@ app.use(helmet())
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(cors())
-
-const dynamoOpts = {
-  table: {
-    name: process.env.CYCLIC_DB,
-    hashKey: 'pk',
-    hashPrefix: 'sid_',
-    sortKey: 'sk',
-    create: false
-  },
-  keepExpired: false,
-  touchInterval: oneHourMs
-}
-
-const oneDayMs = 24 * oneHourMs
-app.use(session({
-  store: new DynamoDBStore(dynamoOpts),
-  secret: process.env.SESSION_SECRET || 'THIS-IS-NOT-A-SECRET',
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    secure: 'auto',
-    maxAge: oneDayMs
-  }
-  // unset: "destroy"
-}))
 
 // GET https://some-app.cyclic.app/files?name=
 // get specific ".json" with the filename
@@ -89,20 +65,15 @@ app.get('/api/listUser', async (req, res) => {
 })
 
 app.post('/api/signup', async (req, res) => {
-  console.log(req.body)
-
   const email = req.body.email
   const password = req.body.password
   const role = 'dev'
-  const uid = 'uid_' + Math.random().toString().slice(2)
-  const uProps = {
-    uid,
-    email,
-    password,
-    role
-  }
 
-  const user = await users.set(email, uProps, { $index: ['uid'] })
+  let me = await users.set('me', {
+      email: email,
+      password: password,
+      role: role,
+  })
 
   res.json(user.props).end()
 })
