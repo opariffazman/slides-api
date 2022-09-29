@@ -31,11 +31,10 @@ const dynamoOpts = {
     create: false
   },
   keepExpired: false,
-  touchInterval: oneHourMs,
-  ttl: oneDayMs
+  touchInterval: oneHourMs
 }
 
-app.set('trust-proxy', 1)
+const oneDayMs = 24 * oneHourMs
 app.use(session({
   store: new DynamoDBStore(dynamoOpts),
   secret: process.env.SESSION_SECRET || 'THIS-IS-NOT-A-SECRET',
