@@ -7,9 +7,9 @@ const AWS = require("aws-sdk")
 const s3 = new AWS.S3()
 
 // cyclic db
-const CyclicDB = require('cyclic-dynamodb')
-const db = CyclicDB(process.env.CyclicDB) // find it on the Database/Storage tab
-const users = db.collection('users')
+// const CyclicDB = require('cyclic-dynamodb')
+// const db = CyclicDB(process.env.CyclicDB)
+// const users = db.collection('users')
 
 // misc
 const cors = require('cors')
@@ -58,28 +58,41 @@ app.get('/api/listJson', async (req, res) => {
 
 })
 
-app.get('/api/listUser', async (req, res) => {
-  const userObjects = await users.list()
+// app.get('/api/listUser', async (req, res) => {
+//   const userObjects = await users.list()
 
-  res.json(userObjects).end()
-})
+//   res.json(userObjects).end()
+// })
 
-app.post('/api/signup', async (req, res) => {
-  const email = req.body.email
-  const password = req.body.password
-  const role = 'dev'
+// app.post('/api/signup', async (req, res) => {
+//   const email = req.body.email
+//   const password = req.body.password
+//   const role = 'dev'
 
-  let me = await users.set('me', {
-      email: email,
-      password: password,
-      role: role,
-  })
+//   let me = await users.set('me', {
+//       email: email,
+//       password: password,
+//       role: role,
+//   })
 
-  res.json(user.props).end()
-})
+//   res.json(me).end()
+// })
 
 // PROTECTED
 const accessTokenSecret = process.env.SECRET_TOKEN
+const users = [
+  {
+    username: process.env.ADMIN_USER,
+    password: process.env.ADMIN_USER,
+    role: 'admin'
+  },
+  {
+    username: 'dev',
+    password: 'dev',
+    role: 'member'
+  }
+]
+
 app.post('/api/signin', (req, res) => {
   const { username, password } = req.body;
 
