@@ -83,7 +83,7 @@ const accessTokenSecret = process.env.SECRET_TOKEN
 const users = [
   {
     username: process.env.ADMIN_USER,
-    password: process.env.ADMIN_USER,
+    password: process.env.ADMIN_PASS,
     role: 'admin'
   },
   {
