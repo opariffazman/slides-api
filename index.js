@@ -22,6 +22,32 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(cors())
 
+const dynamoOpts = {
+  table: {
+    name: process.env.CYCLIC_DB,
+    hashKey: 'pk',
+    hashPrefix: 'sid_',
+    sortKey: 'sk',
+    create: false
+  },
+  keepExpired: false,
+  touchInterval: oneHourMs,
+  ttl: oneDayMs
+}
+
+app.set('trust-proxy', 1)
+app.use(session({
+  store: new DynamoDBStore(dynamoOpts),
+  secret: process.env.SESSION_SECRET || 'THIS-IS-NOT-A-SECRET',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: 'auto',
+    maxAge: oneDayMs
+  }
+  // unset: "destroy"
+}))
+
 // GET https://some-app.cyclic.app/files?name=
 // get specific ".json" with the filename
 app.get('/api/files', async (req, res) => {
@@ -58,9 +84,7 @@ app.get('/api/listJson', async (req, res) => {
 })
 
 app.get('/api/listUser', async (req, res) => {
-  const userObjects = await users.list({
-    tableName: process.env.CYCLIC_DB,
-  })
+  const userObjects = await users.list()
 
   res.json(userObjects).end()
 })
