@@ -58,7 +58,9 @@ app.get('/api/listJson', async (req, res) => {
 })
 
 app.get('/api/listUser', async (req, res) => {
-  const userObjects = await users.list()
+  const userObjects = await users.list({
+    tableName: process.env.CYCLIC_DB,
+  })
 
   res.json(userObjects).end()
 })
