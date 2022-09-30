@@ -58,6 +58,25 @@ app.get('/api/listJson', async (req, res) => {
 
 })
 
+app.get('/api/listPackage', async (req, res) => {
+  const jsonArr = []
+
+  const s3Objects = await s3.listObjects({
+    Bucket: process.env.BUCKET,
+  }).promise()
+
+  const rawObj = s3Objects.Contents
+
+  for (let index = 0; index < rawObj.length; index++) {
+    if (rawObj[index].Key.includes("package")) {
+      jsonArr.push(rawObj[index]);
+    }
+  }
+
+  res.send(jsonArr).end()
+
+})
+
 // app.get('/api/listUser', async (req, res) => {
 //   const userObjects = await users.list()
 
