@@ -150,11 +150,10 @@ const authenticateJWT = (req, res, next) => {
 // PUT https://some-app.cyclic.app/api/files?name=
 app.put('/api/files', authenticateJWT, async (req, res) => {
   const { role } = req.user
+  const filename = req.query.name + '.json'
 
   if (role !== 'admin')
     return res.sendStatus(403)
-
-  const filename = req.query.name + '.json'
 
   await s3.putObject({
     Body: JSON.stringify(req.body),
@@ -169,11 +168,10 @@ app.put('/api/files', authenticateJWT, async (req, res) => {
 // DELETE https://some-app.cyclic.app/api/files?name=
 app.delete('/api/files', authenticateJWT, async (req, res) => {
   const { role } = req.user
-
-  if (role !== admin)
-    return res.sendStatus(403)
-
   const filename = req.query.name + '.json'
+
+  if (role !== 'admin')
+    return res.sendStatus(403)
 
   await s3.deleteObject({
     Bucket: process.env.BUCKET,
