@@ -1,5 +1,5 @@
 {
-  "name": "menu-api",
+  "name": "slides-rest-api",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -9,14 +9,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/opariffazman/starter-rest-api.git"
+    "url": "git+https://github.com/opariffazman/slides-rest-api.git"
   },
-  "author": "",
+  "author": "Ariff Azman",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/opariffazman/starter-rest-api/issues"
+    "url": "https://github.com/opariffazman/slides-rest-api/issues"
   },
-  "homepage": "https://github.com/opariffazman/starter-rest-api#readme",
+  "homepage": "https://github.com/opariffazman/slides-rest-api#readme",
   "dependencies": {
     "aws-sdk": "^2.1223.0",
     "cookie-parser": "^1.4.6",
