@@ -6,11 +6,6 @@ const app = express()
 const AWS = require("aws-sdk")
 const s3 = new AWS.S3()
 
-// cyclic db
-// const CyclicDB = require('cyclic-dynamodb')
-// const db = CyclicDB(process.env.CyclicDB)
-// const users = db.collection('users')
-
 // misc
 const cors = require('cors')
 
@@ -24,9 +19,9 @@ app.use(express.urlencoded({ extended: true }))
 app.use(cors())
 
 // GET https://some-app.cyclic.app/files?name=
-// get specific ".json" with the filename
+// get specific filename
 app.get('/api/files', async (req, res) => {
-  const filename = req.query.name + '.json'
+  const filename = req.query.name
 
   const s3File = await s3.getObject({
     Bucket: process.env.BUCKET,
@@ -68,34 +63,13 @@ app.get('/api/listPackage', async (req, res) => {
   const rawObj = s3Objects.Contents
 
   for (let index = 0; index < rawObj.length; index++) {
-    if (rawObj[index].Key.includes("package")) {
+    if (rawObj[index].Key.includes("pakej")) {
       jsonArr.push(rawObj[index]);
     }
   }
 
   res.send(jsonArr).end()
-
 })
-
-// app.get('/api/listUser', async (req, res) => {
-//   const userObjects = await users.list()
-
-//   res.json(userObjects).end()
-// })
-
-// app.post('/api/signup', async (req, res) => {
-//   const email = req.body.email
-//   const password = req.body.password
-//   const role = 'dev'
-
-//   let me = await users.set('me', {
-//       email: email,
-//       password: password,
-//       role: role,
-//   })
-
-//   res.json(me).end()
-// })
 
 // PROTECTED
 const accessTokenSecret = process.env.SECRET_TOKEN
@@ -150,13 +124,13 @@ const authenticateJWT = (req, res, next) => {
 // PUT https://some-app.cyclic.app/api/files?name=
 app.put('/api/files', authenticateJWT, async (req, res) => {
   const { role } = req.user
-  const filename = req.query.name + '.json'
+  const filename = req.query.name
 
   if (role !== 'admin')
     return res.sendStatus(403)
 
   await s3.putObject({
-    Body: JSON.stringify(req.body),
+    Body: req.body,
     Bucket: process.env.BUCKET,
     Key: filename,
   }).promise()
@@ -168,7 +142,7 @@ app.put('/api/files', authenticateJWT, async (req, res) => {
 // DELETE https://some-app.cyclic.app/api/files?name=
 app.delete('/api/files', authenticateJWT, async (req, res) => {
   const { role } = req.user
-  const filename = req.query.name + '.json'
+  const filename = req.query.name
 
   if (role !== 'admin')
     return res.sendStatus(403)
@@ -190,7 +164,7 @@ app.use('*', (req, res) => {
 
 // /////////////////////////////////////////////////////////////////////////////
 // Start the server
-const port = process.env.PORT || 3000
+const port = process.env.PORT
 app.listen(port, () => {
-  console.log(`index.js listening on ${port}`)
+  console.log(`slides-rest-api listening on ${port}`)
 })
