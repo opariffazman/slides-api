@@ -129,13 +129,14 @@ app.put('/api/files', authenticateJWT, async (req, res) => {
   if (role !== 'admin')
     return res.sendStatus(403)
 
+
   await s3.putObject({
-    Body: req.body,
+    ContentBody: req.body,
+    ContentType:"text/plain",
     Bucket: process.env.BUCKET,
     Key: filename,
   }).promise()
 
-  res.set('Content-type', 'application/json')
   res.send(`${filename} updated`).end()
 })
 
@@ -152,7 +153,6 @@ app.delete('/api/files', authenticateJWT, async (req, res) => {
     Key: filename,
   }).promise()
 
-  res.set('Content-type', 'application/json')
   res.send(`${filename} deleted`).end()
 })
 
