@@ -132,7 +132,7 @@ app.put('/api/files', authenticateJWT, async (req, res) => {
 
   await s3.putObject({
     ContentType: 'binary',
-    Body: Buffer.from(req.body, 'binary'),
+    Body: Buffer.from(req.body.toString(), 'binary'),
     Bucket: process.env.BUCKET,
     Key: filename,
   }).promise()
