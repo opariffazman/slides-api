@@ -73,16 +73,12 @@ app.get('/api/listPackage', async (req, res) => {
 
 // PROTECTED
 const accessTokenSecret = process.env.SECRET_TOKEN
+
 const users = [
   {
     username: process.env.ADMIN_USER,
     password: process.env.ADMIN_PASS,
-    role: 'admin'
-  },
-  {
-    username: 'dev',
-    password: 'dev',
-    role: 'member'
+    role: process.env.ADMIN_ROLE
   }
 ]
 
@@ -129,14 +125,13 @@ app.put('/api/files', authenticateJWT, async (req, res) => {
   if (role !== 'admin')
     return res.sendStatus(403)
 
-
   await s3.putObject({
-    ContentType: 'binary',
-    Body: Buffer.from(req.body.toString(), 'binary'),
+    Body: JSON.stringify(req.body),
     Bucket: process.env.BUCKET,
     Key: filename,
   }).promise()
 
+  res.set('Content-type', 'application/json')
   res.send(`${filename} updated`).end()
 })
 
@@ -153,6 +148,7 @@ app.delete('/api/files', authenticateJWT, async (req, res) => {
     Key: filename,
   }).promise()
 
+  res.set('Content-type', 'application/json')
   res.send(`${filename} deleted`).end()
 })
 
