@@ -2,12 +2,14 @@
 const express = require('express')
 const app = express()
 
+// misc
+require('dotenv').config()
+const cors = require('cors')
+
 // aws s3
 const AWS = require("aws-sdk")
 const s3 = new AWS.S3()
-
-// misc
-const cors = require('cors')
+const s3Bucket = process.env.BUCKET
 
 // security
 const jwt = require('jsonwebtoken')
@@ -24,7 +26,7 @@ app.get('/api/files', async (req, res) => {
   const filename = req.query.name
 
   const s3File = await s3.getObject({
-    Bucket: process.env.BUCKET,
+    Bucket: s3Bucket,
     Key: filename,
   }).promise()
 
@@ -38,7 +40,7 @@ app.get('/api/listJson', async (req, res) => {
   const jsonArr = []
 
   const s3Objects = await s3.listObjects({
-    Bucket: process.env.BUCKET,
+    Bucket: s3Bucket,
   }).promise()
 
   const rawObj = s3Objects.Contents
@@ -57,7 +59,7 @@ app.get('/api/listPackage', async (req, res) => {
   const jsonArr = []
 
   const s3Objects = await s3.listObjects({
-    Bucket: process.env.BUCKET,
+    Bucket: s3Bucket,
   }).promise()
 
   const rawObj = s3Objects.Contents
@@ -127,7 +129,7 @@ app.put('/api/files', authenticateJWT, async (req, res) => {
 
   await s3.putObject({
     Body: JSON.stringify(req.body),
-    Bucket: process.env.BUCKET,
+    Bucket: s3Bucket,
     Key: filename,
   }).promise()
 
@@ -144,7 +146,7 @@ app.delete('/api/files', authenticateJWT, async (req, res) => {
     return res.sendStatus(403)
 
   await s3.deleteObject({
-    Bucket: process.env.BUCKET,
+    Bucket: s3Bucket,
     Key: filename,
   }).promise()
 
