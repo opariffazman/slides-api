@@ -34,6 +34,22 @@ app.get('/api/files', async (req, res) => {
   res.send(s3File.Body.toString()).end()
 })
 
+app.get('/api/listAll', async (req, res) => {
+  const jsonArr = []
+
+  const s3Objects = await s3.listObjects({
+    Bucket: s3Bucket,
+  }).promise()
+
+  const rawObj = s3Objects.Contents
+
+  for (let index = 0; index < rawObj.length; index++) {
+    jsonArr.push(rawObj[index]);
+  }
+
+  res.send(jsonArr).end()
+})
+
 // GET https://some-app.cyclic.app/api/listJson
 // list all objects with ".json" as key inside s3 bucket
 app.get('/api/listJson', async (req, res) => {
@@ -52,7 +68,6 @@ app.get('/api/listJson', async (req, res) => {
   }
 
   res.send(jsonArr).end()
-
 })
 
 app.get('/api/listPackage', async (req, res) => {
@@ -84,6 +99,7 @@ const users = [
   }
 ]
 
+// POST https://some-app.cyclic.app/api/signin
 app.post('/api/signin', (req, res) => {
   const { username, password } = req.body;
 
