@@ -145,12 +145,16 @@ app.delete('/api/files', authenticateJWT, async (req, res) => {
   const filename = req.query.name + ".json"
 
   if (role !== 'admin')
-    return res.sendStatus(403)
+    return res.sendStatus(403).end()
 
-  await s3.deleteObject({
-    Bucket: s3Bucket,
-    Key: filename,
-  }).promise()
+  try {
+    await s3.deleteObject({
+      Bucket: s3Bucket,
+      Key: filename,
+    }).promise()
+  } catch (error) {
+    return res.send(error).end()
+  }
 
   res.set('Content-type', 'application/json')
   res.send(`${filename} deleted`).end()
