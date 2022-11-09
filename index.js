@@ -34,42 +34,6 @@ app.get('/api/files', async (req, res) => {
   res.send(s3File.Body.toString()).end()
 })
 
-app.get('/api/listAll', async (req, res) => {
-  const jsonArr = []
-
-  const s3Objects = await s3.listObjects({
-    Bucket: s3Bucket,
-  }).promise()
-
-  const rawObj = s3Objects.Contents
-
-  for (let index = 0; index < rawObj.length; index++) {
-    jsonArr.push(rawObj[index]);
-  }
-
-  res.send(jsonArr).end()
-})
-
-// GET https://some-app.cyclic.app/api/listJson
-// list all objects with ".json" as key inside s3 bucket
-app.get('/api/listJson', async (req, res) => {
-  const jsonArr = []
-
-  const s3Objects = await s3.listObjects({
-    Bucket: s3Bucket,
-  }).promise()
-
-  const rawObj = s3Objects.Contents
-
-  for (let index = 0; index < rawObj.length; index++) {
-    if (rawObj[index].Key.includes(".json")) {
-      jsonArr.push(rawObj[index]);
-    }
-  }
-
-  res.send(jsonArr).end()
-})
-
 app.get('/api/listPackage', async (req, res) => {
   const jsonArr = []
 
@@ -135,10 +99,32 @@ const authenticateJWT = (req, res, next) => {
     res.sendStatus(401).end()
 }
 
+// GET https://some-app.cyclic.app/listAll
+app.get('/api/listAll', authenticateJWT, async (req, res) => {
+  const { role } = req.user
+
+  if (role !== 'admin')
+    return res.sendStatus(403)
+
+  const jsonArr = []
+
+  const s3Objects = await s3.listObjects({
+    Bucket: s3Bucket,
+  }).promise()
+
+  const rawObj = s3Objects.Contents
+
+  for (let index = 0; index < rawObj.length; index++) {
+    jsonArr.push(rawObj[index]);
+  }
+
+  res.send(jsonArr).end()
+})
+
 // PUT https://some-app.cyclic.app/api/files?name=
 app.put('/api/files', authenticateJWT, async (req, res) => {
   const { role } = req.user
-  const filename = req.query.name
+  const filename = req.query.name + ".json"
 
   if (role !== 'admin')
     return res.sendStatus(403)
@@ -156,7 +142,7 @@ app.put('/api/files', authenticateJWT, async (req, res) => {
 // DELETE https://some-app.cyclic.app/api/files?name=
 app.delete('/api/files', authenticateJWT, async (req, res) => {
   const { role } = req.user
-  const filename = req.query.name
+  const filename = req.query.name + ".json"
 
   if (role !== 'admin')
     return res.sendStatus(403)
