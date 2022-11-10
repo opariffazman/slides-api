@@ -58,7 +58,7 @@ app.get('/api/listFiles', async (req, res) => {
     }
   }
 
-  res.json({ jsonArr }).end()
+  res.json(jsonArr).end()
 })
 
 // PROTECTED
