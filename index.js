@@ -35,10 +35,9 @@ app.get('/api/files', async (req, res) => {
     res.json(s3File.Body.toString()).end()
   } catch (error) {
     if (error.code !== 'NoSuchKey')
-      res.status(500).end()
+      res.sendStatus(500).end()
 
-    console.log(`No such key ${filename}`)
-    res.status(404).end()
+    res.status(404).json({ message: `${filename} not found` }).end()
   }
 
 })
@@ -100,14 +99,14 @@ const authenticateJWT = (req, res, next) => {
 
     jwt.verify(token, accessTokenSecret, (err, user) => {
       if (err)
-        res.status(403).json({ message: err }).end()
+        res.sendStatus(403).end()
 
       req.user = user
       next()
     })
   }
   else
-    res.status(401).end()
+    res.sendStatus(401).end()
 }
 
 // GET https://some-app.cyclic.app/listAll
@@ -115,7 +114,7 @@ app.get('/api/listAll', authenticateJWT, async (req, res) => {
   const { role } = req.user
 
   if (role !== 'admin')
-    res.status(403).end()
+    res.sendStatus(403).end()
 
   const jsonArr = []
 
@@ -138,7 +137,7 @@ app.put('/api/files', authenticateJWT, async (req, res) => {
   const filename = req.query.name + ".json"
 
   if (role !== 'admin')
-    res.status(403)
+    res.sendStatus(403)
 
   // get first
   const s3File = await s3.getObject({
@@ -158,13 +157,13 @@ app.put('/api/files', authenticateJWT, async (req, res) => {
   res.json({ message: `${filename} added` }).end()
 })
 
-// DELETE https://some-app.cyclic.app/api/files?name=
-app.delete('/api/files', authenticateJWT, async (req, res) => {
+// POST https://some-app.cyclic.app/api/files?name=
+app.post('/api/files', authenticateJWT, async (req, res) => {
   const { role } = req.user
   const filename = req.query.name + ".json"
 
   if (role !== 'admin')
-    res.status(403).end()
+    res.sendStatus(403)
 
   // get first
   try {
@@ -174,10 +173,39 @@ app.delete('/api/files', authenticateJWT, async (req, res) => {
     }).promise()
   } catch (error) {
     if (error.code !== 'NoSuchKey')
-      res.status(500).end()
+      res.sendStatus(500).end()
 
-    console.log(`No such key ${filename}`)
-    res.status(404).end()
+    res.status(404).json({ message: `${filename} not found` }).end()
+  }
+
+  await s3.putObject({
+    Body: JSON.stringify(req.body),
+    Bucket: s3Bucket,
+    Key: filename,
+  }).promise()
+
+  res.json({ message: `${filename} updated` }).end()
+})
+
+// DELETE https://some-app.cyclic.app/api/files?name=
+app.delete('/api/files', authenticateJWT, async (req, res) => {
+  const { role } = req.user
+  const filename = req.query.name + ".json"
+
+  if (role !== 'admin')
+    res.sendStatus(403).end()
+
+  // get first
+  try {
+    await s3.getObject({
+      Bucket: s3Bucket,
+      Key: filename,
+    }).promise()
+  } catch (error) {
+    if (error.code !== 'NoSuchKey')
+      res.sendStatus(500).end()
+
+    res.status(404).json({ message: `${filename} not found` }).end()
   }
 
   await s3.deleteObject({
@@ -191,12 +219,12 @@ app.delete('/api/files', authenticateJWT, async (req, res) => {
 // /////////////////////////////////////////////////////////////////////////////
 // Catch all handler for all other request.
 app.use('*', (req, res) => {
-  res.json({ msg: 'no route handler found', path: req.path, method: req.method }).end()
+  res.json({ message: 'no route handler found', path: req.path, method: req.method }).end()
 })
 
 // /////////////////////////////////////////////////////////////////////////////
 // Start the server
 const port = process.env.PORT
 app.listen(port, () => {
-  console.log(`slides-rest-api listening on ${port}`)
+  console.log(`slides-api listening on ${port}`)
 })
