@@ -25,16 +25,27 @@ app.use(cors())
 app.get('/api/files', async (req, res) => {
   const filename = req.query.name
 
-  const s3File = await s3.getObject({
-    Bucket: s3Bucket,
-    Key: filename,
-  }).promise()
+  try {
+    const s3File = await s3.getObject({
+      Bucket: s3Bucket,
+      Key: filename,
+    }).promise()
 
-  res.set('Content-type', s3File.ContentType)
-  res.send(s3File.Body.toString()).end()
+    res.set('Content-type', s3File.ContentType)
+    res.json(s3File.Body.toString()).end()
+  } catch (error) {
+    if (error.code !== 'NoSuchKey')
+      res.status(500).end()
+
+    console.log(`No such key ${filename}`)
+    res.status(404).end()
+  }
+
 })
 
-app.get('/api/listPackage', async (req, res) => {
+// GET https://some-app.cyclic.app/listFiles
+// list files with key 'pakej'
+app.get('/api/listFiles', async (req, res) => {
   const jsonArr = []
 
   const s3Objects = await s3.listObjects({
@@ -49,7 +60,7 @@ app.get('/api/listPackage', async (req, res) => {
     }
   }
 
-  res.send(jsonArr).end()
+  res.json({ jsonArr }).end()
 })
 
 // PROTECTED
@@ -73,10 +84,10 @@ app.post('/api/signin', (req, res) => {
     // Generate an access token
     const accessToken = jwt.sign({ username: user.username, role: user.role }, accessTokenSecret)
 
-    res.json({ accessToken })
+    res.json({ accessToken }).end()
   }
   else
-    res.send('Incorrect username or password')
+    res.json({ message: 'incorrect password or username' }).end()
 
 })
 
@@ -89,14 +100,14 @@ const authenticateJWT = (req, res, next) => {
 
     jwt.verify(token, accessTokenSecret, (err, user) => {
       if (err)
-        return res.sendStatus(403)
+        res.status(403).json({ message: err }).end()
 
       req.user = user
       next()
     })
   }
   else
-    res.sendStatus(401).end()
+    res.status(401).end()
 }
 
 // GET https://some-app.cyclic.app/listAll
@@ -104,7 +115,7 @@ app.get('/api/listAll', authenticateJWT, async (req, res) => {
   const { role } = req.user
 
   if (role !== 'admin')
-    return res.sendStatus(403)
+    res.status(403).end()
 
   const jsonArr = []
 
@@ -118,7 +129,7 @@ app.get('/api/listAll', authenticateJWT, async (req, res) => {
     jsonArr.push(rawObj[index]);
   }
 
-  res.send(jsonArr).end()
+  res.json(jsonArr).end()
 })
 
 // PUT https://some-app.cyclic.app/api/files?name=
@@ -127,7 +138,16 @@ app.put('/api/files', authenticateJWT, async (req, res) => {
   const filename = req.query.name + ".json"
 
   if (role !== 'admin')
-    return res.sendStatus(403)
+    res.status(403)
+
+  // get first
+  const s3File = await s3.getObject({
+    Bucket: s3Bucket,
+    Key: filename,
+  }).promise()
+
+  if (s3File !== null)
+    res.json({ message: `${filename} already exist` }).end()
 
   await s3.putObject({
     Body: JSON.stringify(req.body),
@@ -135,8 +155,7 @@ app.put('/api/files', authenticateJWT, async (req, res) => {
     Key: filename,
   }).promise()
 
-  res.set('Content-type', 'application/json')
-  res.send(`${filename} updated`).end()
+  res.json({ message: `${filename} added` }).end()
 })
 
 // DELETE https://some-app.cyclic.app/api/files?name=
@@ -145,19 +164,28 @@ app.delete('/api/files', authenticateJWT, async (req, res) => {
   const filename = req.query.name + ".json"
 
   if (role !== 'admin')
-    return res.sendStatus(403).end()
+    res.status(403).end()
 
+  // get first
   try {
-    await s3.deleteObject({
+    await s3.getObject({
       Bucket: s3Bucket,
       Key: filename,
     }).promise()
   } catch (error) {
-    return res.send(error).end()
+    if (error.code !== 'NoSuchKey')
+      res.status(500).end()
+
+    console.log(`No such key ${filename}`)
+    res.status(404).end()
   }
 
-  res.set('Content-type', 'application/json')
-  res.send(`${filename} deleted`).end()
+  await s3.deleteObject({
+    Bucket: s3Bucket,
+    Key: filename,
+  }).promise()
+
+  res.json({ message: `${filename} deleted` }).end()
 })
 
 // /////////////////////////////////////////////////////////////////////////////
