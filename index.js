@@ -85,8 +85,7 @@ app.post('/api/signin', (req, res) => {
     res.json({ accessToken }).end()
   }
   else
-    res.json({ message: 'incorrect password or username' }).end()
-
+    res.status(403).json({ message: 'incorrect password or username' }).end()
 })
 
 // AUTH
@@ -171,10 +170,10 @@ app.post('/api/files', authenticateJWT, async (req, res) => {
       Key: filename,
     }).promise()
   } catch (error) {
-    if (error.code !== 'NoSuchKey')
-      res.sendStatus(500).end()
+    if (error.code === 'NoSuchKey')
+      res.status(404).json({ message: `${filename} not found` }).end()
 
-    res.status(404).json({ message: `${filename} not found` }).end()
+    res.sendStatus(500).end()
   }
 
   await s3.putObject({
@@ -201,10 +200,10 @@ app.delete('/api/files', authenticateJWT, async (req, res) => {
       Key: filename,
     }).promise()
   } catch (error) {
-    if (error.code !== 'NoSuchKey')
-      res.sendStatus(500).end()
+    if (error.code === 'NoSuchKey')
+      res.status(404).json({ message: `${filename} not found` }).end()
 
-    res.status(404).json({ message: `${filename} not found` }).end()
+    res.sendStatus(500).end()
   }
 
   await s3.deleteObject({
