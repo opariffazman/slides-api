@@ -31,8 +31,7 @@ app.get('/api/files', async (req, res) => {
       Key: filename,
     }).promise()
 
-    res.set('Content-type', s3File.ContentType)
-    res.send(JSON.parse(s3File.Body.toString())).end()
+    res.json(JSON.parse(s3File.Body.toString())).end()
   } catch (error) {
     if (error.code !== 'NoSuchKey')
       res.sendStatus(500).end()
