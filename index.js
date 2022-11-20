@@ -155,7 +155,7 @@ app.put('/api/files', authenticateJWT, async (req, res) => {
 
       res.json({ message: `${filename} added` }).end()
     }
-    else if (s3File) {
+    else if (error.code !== 'NoSuchKey') {
       res.json({ message: `${filename} already exist` }).end()
     }
     else
