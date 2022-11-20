@@ -133,26 +133,34 @@ app.get('/api/listAll', authenticateJWT, async (req, res) => {
 app.put('/api/files', authenticateJWT, async (req, res) => {
   const { role } = req.user
   const filename = req.query.name + ".json"
+  const s3File = ''
 
   if (role !== 'admin')
     res.sendStatus(403)
 
   // get first
-  const s3File = await s3.getObject({
-    Bucket: s3Bucket,
-    Key: filename,
-  }).promise()
+  try {
+    s3File = await s3.getObject({
+      Bucket: s3Bucket,
+      Key: filename,
+    }).promise()
 
-  if (s3File !== null)
-    res.json({ message: `${filename} already exist` }).end()
+  } catch (error) {
+    if (error.code === 'NoSuchKey') {
+      await s3.putObject({
+        Body: JSON.stringify(req.body),
+        Bucket: s3Bucket,
+        Key: filename,
+      }).promise()
 
-  await s3.putObject({
-    Body: JSON.stringify(req.body),
-    Bucket: s3Bucket,
-    Key: filename,
-  }).promise()
-
-  res.json({ message: `${filename} added` }).end()
+      res.json({ message: `${filename} added` }).end()
+    }
+    else if (s3File) {
+      res.json({ message: `${filename} already exist` }).end()
+    }
+    else
+      res.sendStatus(500).end()
+  }
 })
 
 // POST https://some-app.cyclic.app/api/files?name=
