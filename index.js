@@ -31,7 +31,9 @@ app.get('/api/files', async (req, res) => {
       Key: filename,
     }).promise()
 
-    res.json(JSON.parse(s3File.Body.toString())).end()
+    let parsed = JSON.parse(s3File.Body.toString())
+    delete parsed['url'] // don't pass url for this endpoint
+    res.json(parsed).end()
   } catch (error) {
     if (error.code !== 'NoSuchKey')
       res.sendStatus(500).end()
